@@ -18,7 +18,7 @@ export function generateMarkdownComment(
 	markdown += `| Metric | Value |\n`;
 	markdown += `| --- | --- |\n`;
 	markdown += `| Total Files Analyzed | ${summary.totalFiles} |\n`;
-	markdown += `| Average Score | ${summary.averageScore.toFixed(2)}/10 |\n\n`;
+	markdown += `| Average Score | ${summary.averageScore.toFixed(2)}/100 |\n\n`;
 
 	// Overall summary text
 	markdown += `## Overall Assessment\n\n${summary.summary}\n\n`;
@@ -59,7 +59,7 @@ export function generateMarkdownComment(
 		detailedReport.forEach((report) => {
 			// Escape pipe characters in the summary
 			const sanitizedSummary = report.summary.replace(/\|/g, "\\|");
-			markdown += `| \`${report.file}\` | ${report.score.toFixed(1)} | ${sanitizedSummary} |\n`;
+			markdown += `| \`${report.file}\` | ${report.score.toFixed(1)}/100 | ${sanitizedSummary} |\n`;
 		});
 		markdown += `\n`;
 
@@ -73,7 +73,7 @@ export function generateMarkdownComment(
 			report.tests.forEach((test) => {
 				// Escape pipe characters in the suggestions
 				const sanitizedSuggestions = test.suggestions.replace(/\|/g, "\\|");
-				markdown += `| ${test.name} | ${test.score.toFixed(1)} | ${test.meaningful ? "✅" : "❌"} | ${sanitizedSuggestions} |\n`;
+				markdown += `| ${test.name} | ${test.score.toFixed(1)}/100 | ${test.meaningful ? "✅" : "❌"} | ${sanitizedSuggestions} |\n`;
 			});
 
 			markdown += `\n`;

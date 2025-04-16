@@ -26,7 +26,7 @@ You are a senior software engineer. Evaluate the following TypeScript unit tests
 For each test, provide:
 - Summary of what it's testing.
 - Whether it's meaningful or just testing implementation details.
-- A score from 1-10 for its value.
+- A score from 0-100 for its value.
 - Suggestions if it's weak.
 
 Here are the test files to evaluate:

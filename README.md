@@ -53,10 +53,10 @@ jobs:
 |-----------------|-----------------------------------------------------------|----------|----------------|
 | openai_api_key  | Your OpenAI API key                                       | Yes      | -              |
 | github_token    | GitHub token for posting comments to PRs                  | No       | -              |
-| batch_size      | Number of files to process in each batch                  | No       | 5              |
+| batch_size      | Number of files to process in each batch                   | No       | 5              |
 | model           | OpenAI model to use                                       | No       | gpt-4o-mini    |
 | temperature     | Temperature setting for the AI model                      | No       | 0.5            |
-| test_files      | Whitespace-separated list of glob patterns for test files | No       | **/*.test.ts   |
+| test_files       | Whitespace-separated list of glob patterns for test files  | No       | **/*.test.ts   |
 
 ## Outputs
 

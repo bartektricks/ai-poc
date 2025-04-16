@@ -133,7 +133,7 @@ export async function run(): Promise<void> {
 		// Log summary to console
 		core.info("Analysis complete!");
 		core.info(`Total files analyzed: ${finalSummary.totalFiles}`);
-		core.info(`Average score: ${finalSummary.averageScore.toFixed(2)}/10`);
+		core.info(`Average score: ${finalSummary.averageScore.toFixed(2)}/100`);
 		core.info(`Summary: ${finalSummary.summary}`);
 	} catch (error) {
 		// Fail the workflow run if an error occurs
