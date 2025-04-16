@@ -11,13 +11,10 @@ import { identifyTopIssues } from "./identifyTopIssues";
 export async function run(): Promise<void> {
 	try {
 		const apiKey = core.getInput("open_ai_api_key", { required: true });
-		const batchSize =
-			Number(core.getInput("batch_size", { required: false })) || 5;
+		const batchSize = Number(core.getInput("batch_size", { required: false })) || 5;
 		const model = core.getInput("model", { required: false }) || "gpt-4o-mini";
-		const temperature =
-			Number(core.getInput("temperature", { required: false })) || 0.5;
-		const testPatterns =
-			core.getInput("test_files", { required: false }) || "**/*.test.ts";
+		const temperature = Number(core.getInput("temperature", { required: false })) || 0.5;
+		const testPatterns = core.getInput("test_files", { required: false }) || "**/*.test.ts";
 
 		const openai = new OpenAI({
 			apiKey,
@@ -25,7 +22,11 @@ export async function run(): Promise<void> {
 
 		core.info(`Finding test files`);
 
-		const patterns = ["!**/node_modules/**", "!**/dist/**", "!**/build/**"];
+		const patterns = [
+			"!**/node_modules/**",
+			"!**/dist/**",
+			"!**/build/**",
+		];
 
 		if (testPatterns) {
 			patterns.unshift(...testPatterns.split(" "));
