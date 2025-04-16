@@ -1,19 +1,18 @@
-#TODO! populate
+name: Test Quality Analysis
+description: Analyze the quality of your test files with AI
+author: Aetherr-Agency
 
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
-
-# Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: heart
-  color: red
+  icon: check-circle
+  color: purple
 
-# Define your inputs here.
 inputs:
   openai_api_key:
     description: Your OpenAI API key
     required: true
+  github_token:
+    description: Your GitHub token
+    required: false
   batch_size:
     description: The number of files to process in each batch
     required: false
@@ -31,12 +30,13 @@ inputs:
     required: false
     default: "**/*.test.ts"
 
-# Define your outputs here.
 outputs:
   summary:
     description: The summary of the test files
   detailed_report:
     description: The detailed report of the test files
+  markdown_comment:
+    description: The markdown comment to post to the PR
 
 runs:
   using: node20

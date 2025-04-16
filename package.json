@@ -36,10 +36,11 @@
 	"license": "MIT",
 	"dependencies": {
 		"@actions/core": "^1.11.1",
+		"@actions/github": "^6.0.0",
+		"@actions/glob": "^0.5.0",
 		"openai": "^4.94.0"
 	},
 	"devDependencies": {
-		"@actions/glob": "^0.5.0",
 		"@biomejs/biome": "^1.9.4",
 		"@github/local-action": "^3.1.4",
 		"@rollup/plugin-commonjs": "^28.0.3",
