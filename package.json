@@ -1,19 +1,27 @@
 {
-	"name": "javascript-action",
-	"description": "GitHub Actions JavaScript Template",
+	"name": "deepdive",
+	"description": "Analyze the quality of your test files with AI",
 	"version": "0.0.0",
-	"author": "",
+	"author": "Aetherr-Agency",
 	"type": "module",
 	"private": true,
-	"homepage": "https://github.com/actions/javascript-action#readme",
+	"homepage": "https://github.com/aetherr-agency/DeepDive#readme",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/actions/javascript-action.git"
+		"url": "git+https://github.com/aetherr-agency/DeepDive.git"
 	},
 	"bugs": {
-		"url": "https://github.com/actions/javascript-action/issues"
+		"url": "https://github.com/aetherr-agency/DeepDive/issues"
 	},
-	"keywords": ["actions"],
+	"keywords": [
+		"actions",
+		"test",
+		"quality",
+		"analysis",
+		"ai",
+		"test-quality-analysis",
+		"openai"
+	],
 	"exports": {
 		".": "./dist/index.js"
 	},
