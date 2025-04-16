@@ -1,3 +1,5 @@
+#TODO! populate
+
 name: The name of your action here
 description: Provide a description here
 author: Your name or organization here
@@ -9,15 +11,32 @@ branding:
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
+  openai_api_key:
+    description: Your OpenAI API key
     required: true
-    default: '1000'
+  batch_size:
+    description: The number of files to process in each batch
+    required: false
+    default: "5"
+  model:
+    description: The model to use for the test files
+    required: false
+    default: "gpt-4o-mini"
+  temperature:
+    description: The temperature to use for the test files
+    required: false
+    default: "0.5"
+  test_files:
+    description: Whitespaces separated list of glob patterns to find test files
+    required: false
+    default: "**/*.test.ts"
 
 # Define your outputs here.
 outputs:
-  time:
-    description: Your output description here
+  summary:
+    description: The summary of the test files
+  detailed_report:
+    description: The detailed report of the test files
 
 runs:
   using: node20
