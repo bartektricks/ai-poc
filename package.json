@@ -1,0 +1,57 @@
+{
+	"name": "javascript-action",
+	"description": "GitHub Actions JavaScript Template",
+	"version": "0.0.0",
+	"author": "",
+	"type": "module",
+	"private": true,
+	"homepage": "https://github.com/actions/javascript-action#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/actions/javascript-action.git"
+	},
+	"bugs": {
+		"url": "https://github.com/actions/javascript-action/issues"
+	},
+	"keywords": ["actions"],
+	"exports": {
+		".": "./dist/index.js"
+	},
+	"engines": {
+		"node": ">=20"
+	},
+	"scripts": {
+		"bundle": "pnpm run check:fix && pnpm run package",
+		"ci-test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 vitest run",
+		"coverage": "pnpm make-coverage-badge --output-path ./badges/coverage.svg",
+		"check": "biome check .",
+		"check:fix": "biome check --write .",
+		"local-action": "pnpm dlx @github/local-action . src/main.ts .env",
+		"package": "pnpm rollup --config rollup.config.js",
+		"package:watch": "pnpm run package -- --watch",
+		"test": "vitest",
+		"test:run": "vitest run",
+		"all": "pnpm run check:fix && pnpm run test:run && pnpm run coverage && pnpm run package"
+	},
+	"license": "MIT",
+	"dependencies": {
+		"@actions/core": "^1.11.1"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"@github/local-action": "^3.1.4",
+		"@rollup/plugin-commonjs": "^28.0.3",
+		"@rollup/plugin-node-resolve": "^16.0.1",
+		"@rollup/plugin-typescript": "^12.1.2",
+		"@types/node": "^22.14.1",
+		"make-coverage-badge": "^1.2.0",
+		"rollup": "^4.40.0",
+		"vitest": "^3.1.1"
+	},
+	"optionalDependencies": {
+		"@rollup/rollup-linux-x64-gnu": "^4.40.0"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
+	}
+}
