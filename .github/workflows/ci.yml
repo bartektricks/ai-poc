@@ -47,7 +47,6 @@ jobs:
       - name: Test Local Action
         uses: ./
         with:
-          milliseconds: 1000
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Print Output
-        run: echo "${{ steps.test-action.outputs.time }}"
