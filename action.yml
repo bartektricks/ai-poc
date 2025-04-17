@@ -37,26 +37,19 @@ inputs:
 outputs:
   summary:
     description: The summary of the test files
-    value: ${{ steps.run.outputs.summary }}
   detailed_report:
     description: The detailed report of the test files
-    value: ${{ steps.run.outputs.detailed_report }}
   markdown_comment:
     description: The markdown comment to post to the PR
-    value: ${{ steps.run.outputs.markdown_comment }}
 
 runs:
-  using: composite
-  steps:
-    - name: Run
-      id: run
-      run: node --experimental-sqlite dist/index.js
-      shell: bash
-      with:
-        openai_api_key: ${{ inputs.openai_api_key }}
-        github_token: ${{ inputs.github_token }}
-        batch_size: ${{ inputs.batch_size }}
-        model: ${{ inputs.model }}
-        temperature: ${{ inputs.temperature }}
-        test_files: ${{ inputs.test_files }}
-        only_changed_files: ${{ inputs.only_changed_files }}
+  using: docker
+  image: Dockerfile
+  env:
+    OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+    GITHUB_TOKEN: ${{ inputs.github_token }}
+    BATCH_SIZE: ${{ inputs.batch_size }}
+    MODEL: ${{ inputs.model }}
+    TEMPERATURE: ${{ inputs.temperature }}
+    TEST_FILES: ${{ inputs.test_files }}
+    ONLY_CHANGED_FILES: ${{ inputs.only_changed_files }}
