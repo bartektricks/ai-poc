@@ -5,6 +5,7 @@ import { readFile } from "fs/promises";
 import OpenAI from "openai";
 import { calculateAverageScore } from "./calculateAverageScore";
 import { generateMarkdownComment } from "./generateMarkdownComment";
+import { getChangedFiles } from "./getChangedFiles";
 import { ResponseJson, getPrompt } from "./getPrompt";
 import type { File } from "./getPrompt";
 import { identifyTopIssues } from "./identifyTopIssues";
@@ -12,15 +13,16 @@ import { postCommentToPR } from "./postCommentToPr";
 
 export async function run(): Promise<void> {
 	try {
-		const apiKey = core.getInput("open_ai_api_key", { required: true });
-		const batchSize =
-			Number(core.getInput("batch_size", { required: false })) || 5;
+		const apiKey = core.getInput("openai_api_key", { required: true });
+		const batchSize = Number(core.getInput("batch_size", { required: false })) || 5;
 		const model = core.getInput("model", { required: false }) || "gpt-4o-mini";
-		const temperature =
-			Number(core.getInput("temperature", { required: false })) || 0.5;
-		const testPatterns =
-			core.getInput("test_files", { required: false }) || "**/*.test.ts";
+		const temperature = Number(
+			core.getInput("temperature", { required: false }) || "0.5",
+		);
+		const testPatterns = core.getInput("test_files", { required: false }) || "**/*.test.ts";
 		const githubToken = core.getInput("github_token", { required: false });
+		const onlyChangedFilesInput = core.getInput("only_changed_files", { required: false }) || "true"
+		const onlyChangedFiles = onlyChangedFilesInput === "true";
 
 		const openai = new OpenAI({
 			apiKey,
@@ -34,15 +36,40 @@ export async function run(): Promise<void> {
 			patterns.unshift(...testPatterns.split(" "));
 		}
 
-		const globber = await glob.create(patterns.join("\n"));
-		const testFiles = await globber.glob();
+		let testFiles: string[] = [];
+
+		async function getTestFiles(): Promise<string[]> {
+			const globber = await glob.create(patterns.join("\n"));
+			return globber.glob();
+		}
+
+		if (onlyChangedFiles && githubToken) {
+			core.info("Getting changed files from PR");
+			const changedFiles = await getChangedFiles(githubToken);
+			const allTestFiles = await getTestFiles();
+
+			const relativeChangedFiles = changedFiles.map((file) =>
+				path.relative(process.cwd(), file),
+			);
+
+			testFiles = allTestFiles.filter((file) => {
+				const relativePath = path.relative(process.cwd(), file);
+				return relativeChangedFiles.includes(relativePath);
+			});
+
+			core.info(
+				`Found ${testFiles.length} changed test files out of ${allTestFiles.length} total test files`,
+			);
+		} else {
+			testFiles = await getTestFiles();
+		}
 
 		if (testFiles.length === 0) {
 			core.info(`No test files found`);
 			return;
 		}
 
-		core.info(`Found ${testFiles.length} test files`);
+		core.info(`Analyzing ${testFiles.length} test files`);
 
 		const batches = [];
 

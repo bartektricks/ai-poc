@@ -57,6 +57,7 @@ jobs:
 | model           | OpenAI model to use                                       | No       | gpt-4o-mini    |
 | temperature     | Temperature setting for the AI model                      | No       | 0.5            |
 | test_files       | Whitespace-separated list of glob patterns for test files  | No       | **/*.test.ts   |
+| only_changed_files | Only analyze test files that have been changed in the PR  | No       | true           |
 
 ## Outputs
 

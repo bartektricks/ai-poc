@@ -29,6 +29,10 @@ inputs:
     description: Whitespaces separated list of glob patterns to find test files
     required: false
     default: "**/*.test.ts"
+  only_changed_files:
+    description: Only analyze test files that have been changed in the PR
+    required: false
+    default: "true"
 
 outputs:
   summary:
