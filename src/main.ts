@@ -51,6 +51,9 @@ export async function run(): Promise<void> {
 			const changedFiles = await getChangedFiles(githubToken);
 			const allTestFiles = await getTestFiles();
 
+			console.log(changedFiles, "changedFiles from PR");
+			console.log(allTestFiles, "allTestFiles");
+
 			const relativeChangedFiles = changedFiles.map((file) =>
 				path.relative(process.cwd(), file),
 			);

@@ -70887,6 +70887,8 @@ async function run() {
             core.info("Getting changed files from PR");
             const changedFiles = await getChangedFiles(githubToken);
             const allTestFiles = await getTestFiles();
+            console.log(changedFiles, "changedFiles from PR");
+            console.log(allTestFiles, "allTestFiles");
             const relativeChangedFiles = changedFiles.map((file) => require$$0$a.relative(process.cwd(), file));
             testFiles = allTestFiles.filter((file) => {
                 const relativePath = require$$0$a.relative(process.cwd(), file);
