@@ -14,14 +14,17 @@ import { postCommentToPR } from "./postCommentToPr";
 export async function run(): Promise<void> {
 	try {
 		const apiKey = core.getInput("openai_api_key", { required: true });
-		const batchSize = Number(core.getInput("batch_size", { required: false })) || 5;
+		const batchSize =
+			Number(core.getInput("batch_size", { required: false })) || 5;
 		const model = core.getInput("model", { required: false }) || "gpt-4o-mini";
 		const temperature = Number(
 			core.getInput("temperature", { required: false }) || "0.5",
 		);
-		const testPatterns = core.getInput("test_files", { required: false }) || "**/*.test.ts";
+		const testPatterns =
+			core.getInput("test_files", { required: false }) || "**/*.test.ts";
 		const githubToken = core.getInput("github_token", { required: false });
-		const onlyChangedFilesInput = core.getInput("only_changed_files", { required: false }) || "true"
+		const onlyChangedFilesInput =
+			core.getInput("only_changed_files", { required: false }) || "true";
 		const onlyChangedFiles = onlyChangedFilesInput === "true";
 
 		const openai = new OpenAI({

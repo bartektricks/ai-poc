@@ -35,10 +35,10 @@
 		"check": "biome check .",
 		"check:fix": "biome check --write .",
 		"local-action": "pnpm dlx @github/local-action . src/main.ts .env",
-		"package": "pnpm rollup --config rollup.config.js",
+		"package": "rollup --config rollup.config.js",
 		"package:watch": "pnpm run package -- --watch",
 		"test": "vitest",
-		"test:run": "vitest run",
+		"test:run": "vitest run --coverage",
 		"all": "pnpm run check:fix && pnpm run test:run && pnpm run coverage && pnpm run package"
 	},
 	"license": "MIT",
@@ -55,6 +55,8 @@
 		"@rollup/plugin-node-resolve": "^16.0.1",
 		"@rollup/plugin-typescript": "^12.1.2",
 		"@types/node": "^22.14.1",
+		"@vitest/coverage-v8": "3.1.1",
+		"lefthook": "^1.11.10",
 		"make-coverage-badge": "^1.2.0",
 		"rollup": "^4.40.0",
 		"vitest": "^3.1.1"
@@ -63,6 +65,6 @@
 		"@rollup/rollup-linux-x64-gnu": "^4.40.0"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
+		"onlyBuiltDependencies": ["@biomejs/biome", "esbuild", "lefthook"]
 	}
 }
