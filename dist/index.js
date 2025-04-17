@@ -70881,8 +70881,9 @@ async function run() {
         let testFiles = [];
         async function getTestFiles() {
             const globber = await glob.create(patterns.join("\n"));
-            return globber.glob();
+            return await globber.glob();
         }
+        console.log(patterns, "patterns");
         if (onlyChangedFiles && githubToken) {
             core.info("Getting changed files from PR");
             const changedFiles = await getChangedFiles(githubToken);
