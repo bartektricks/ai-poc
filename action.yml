@@ -52,3 +52,11 @@ runs:
       id: run
       run: node --experimental-sqlite dist/index.js
       shell: bash
+      with:
+        openai_api_key: ${{ inputs.openai_api_key }}
+        github_token: ${{ inputs.github_token }}
+        batch_size: ${{ inputs.batch_size }}
+        model: ${{ inputs.model }}
+        temperature: ${{ inputs.temperature }}
+        test_files: ${{ inputs.test_files }}
+        only_changed_files: ${{ inputs.only_changed_files }}
