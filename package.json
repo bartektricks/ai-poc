@@ -1,7 +1,7 @@
 {
 	"name": "deepdive",
 	"description": "Analyze the quality of your test files with AI",
-	"version": "0.0.0",
+	"version": "1.0.0",
 	"author": "Aetherr-Agency",
 	"type": "module",
 	"private": true,
