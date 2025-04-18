@@ -35976,66 +35976,41 @@ const calculateAverageScore = (detailedReport) => {
     if (detailedReport.length === 0)
         return 0;
     const sum = detailedReport.reduce((total, file) => total + (file.score || 0), 0);
-    // Scale the average score to a 0-100 range
-    return (sum / detailedReport.length) * 10;
+    return sum / detailedReport.length;
 };
 
+const MEANINGFUL_SCORE = 70;
+
+const getPipeSanitizedText = (text) => text.replace(/\|/g, "\\|");
 function generateMarkdownComment(summary, detailedReport) {
-    // Create the summary section
     let markdown = `# 📊 Test Quality Analysis\n\n`;
-    // Summary table
     markdown += `## Summary\n\n`;
     markdown += `| Metric | Value |\n`;
     markdown += `| --- | --- |\n`;
     markdown += `| Total Files Analyzed | ${summary.totalFiles} |\n`;
-    markdown += `| Average Score | ${summary.averageScore.toFixed(2)}/100 |\n\n`;
-    // Overall summary text
+    markdown += `| Average Score | ${summary.averageScore}/100 |\n\n`;
     markdown += `## Overall Assessment\n\n${summary.summary}\n\n`;
-    // Top Issues section
     if (summary.topIssues.length > 0) {
         markdown += `## Top Issues\n\n`;
-        summary.topIssues.forEach((issueGroup) => {
-            markdown += `### ${issueGroup.type} (${issueGroup.count})\n\n`;
-            if (issueGroup.examples.length > 0) {
-                markdown += `| File | Issue |\n`;
-                markdown += `| --- | --- |\n`;
-                issueGroup.examples.forEach((example) => {
-                    const file = example.file;
-                    const reason = "test" in example
-                        ? `${example.test}: ${example.reason}`
-                        : example.reason;
-                    // Escape pipe characters
-                    const sanitizedReason = reason.replace(/\|/g, "\\|");
-                    markdown += `| \`${file}\` | ${sanitizedReason} |\n`;
-                });
-                markdown += `\n`;
-            }
-        });
-    }
-    // Detailed report section
-    if (detailedReport.length > 0) {
-        markdown += `## Detailed Report\n\n`;
-        markdown += `| File | Score | Summary |\n`;
-        markdown += `| --- | --- | --- |\n`;
-        detailedReport.forEach((report) => {
-            // Escape pipe characters in the summary
-            const sanitizedSummary = report.summary.replace(/\|/g, "\\|");
-            markdown += `| \`${report.file}\` | ${report.score.toFixed(1)}/100 | ${sanitizedSummary} |\n`;
-        });
-        markdown += `\n`;
-        // Add test details for each file
-        markdown += `## Test Details\n\n`;
-        detailedReport.forEach((report) => {
-            markdown += `### ${report.file}\n\n`;
-            markdown += `| Test | Score | Meaningful | Suggestions |\n`;
-            markdown += `| --- | --- | --- | --- |\n`;
-            report.tests.forEach((test) => {
-                // Escape pipe characters in the suggestions
-                const sanitizedSuggestions = test.suggestions.replace(/\|/g, "\\|");
-                markdown += `| ${test.name} | ${test.score.toFixed(1)}/100 | ${test.meaningful ? "✅" : "❌"} | ${sanitizedSuggestions} |\n`;
-            });
+        markdown += `### Low scoring test files (${summary.topIssues.length})\n\n`;
+        markdown += `| File | Issue |\n`;
+        markdown += `| --- | --- |\n`;
+        summary.topIssues.forEach(({ file, reason }) => {
+            const sanitizedReason = getPipeSanitizedText(reason);
+            markdown += `| \`${file}\` | ${sanitizedReason} |\n`;
             markdown += `\n`;
         });
+    }
+    if (detailedReport.length > 0) {
+        markdown += `## Detailed Report\n\n`;
+        markdown += `| File | Score | Meaningful | Suggestions | Summary |\n`;
+        markdown += `| --- | --- | --- | --- | --- |\n`;
+        detailedReport.forEach((report) => {
+            const sanitizedSummary = getPipeSanitizedText(report.summary);
+            const sanitizedSuggestions = getPipeSanitizedText(report.suggestions);
+            markdown += `| \`${report.file}\` | ${report.score}/100 | ${report.score > MEANINGFUL_SCORE ? "✅" : "❌"} | ${sanitizedSuggestions} | ${sanitizedSummary} |\n`;
+        });
+        markdown += `\n`;
     }
     return markdown;
 }
@@ -70723,9 +70698,7 @@ async function getChangedFiles(token) {
         const { owner, repo } = context.repo;
         const pull_number = context.payload.pull_request.number;
         coreExports.info(`Getting changed files for PR #${pull_number} in ${owner}/${repo}`);
-        // Get all changed files in the PR
         const changedFiles = [];
-        // Need to handle pagination for PRs with many changed files
         const options = octokit.rest.pulls.listFiles.endpoint.merge({
             owner: owner,
             repo: repo,
@@ -70734,7 +70707,6 @@ async function getChangedFiles(token) {
         });
         const response = await octokit.paginate(options);
         for (const file of response) {
-            // Ensure file has the expected structure with a filename property
             if (file &&
                 typeof file === "object" &&
                 "filename" in file &&
@@ -70778,63 +70750,21 @@ Please provide your analysis in JSON format with the following structure:
     {
       "file": "path/to/file.test.ts",
       "summary": "Overall assessment of the test file",
-      "score": 7,
-      "tests": [
-        {
-          "name": "test name or description",
-          "summary": "What this test is checking",
-          "meaningful": true/false,
-          "score": 8,
-          "suggestions": "Any improvement suggestions"
-        }
-      ]
+      "score": 70/100,
+	  "suggestions": "Any improvement suggestions if score below ${MEANINGFUL_SCORE}",
     }
   ],
   "overallSummary": "Brief summary of all test files analyzed in this batch"
 }
 `;
 
-const identifyTopIssues = (detailedReport) => {
-    const issues = [];
-    // Find files with low scores
-    const lowScoringFiles = detailedReport
-        .filter((file) => file.score < 5)
-        .map((file) => ({
-        file: file.file,
-        score: file.score,
-        reason: file.summary,
-    }));
-    if (lowScoringFiles.length > 0) {
-        issues.push({
-            type: "Low scoring test files",
-            count: lowScoringFiles.length,
-            examples: lowScoringFiles.slice(0, 3),
-        });
-    }
-    // Find tests that are not meaningful
-    const meaninglessTests = [];
-    detailedReport.forEach((file) => {
-        if (file.tests) {
-            file.tests.forEach((test) => {
-                if (test.meaningful === false) {
-                    meaninglessTests.push({
-                        file: file.file,
-                        test: test.name,
-                        reason: test.summary,
-                    });
-                }
-            });
-        }
-    });
-    if (meaninglessTests.length > 0) {
-        issues.push({
-            type: "Tests of implementation details",
-            count: meaninglessTests.length,
-            examples: meaninglessTests.slice(0, 3),
-        });
-    }
-    return issues;
-};
+const identifyTopIssues = (detailedReport) => detailedReport
+    .filter((file) => file.score < MEANINGFUL_SCORE)
+    .map((file) => ({
+    file: file.file,
+    score: file.score,
+    reason: file.summary,
+}));
 
 async function postCommentToPR(token, comment) {
     const octokit = github.getOctokit(token);
@@ -70918,7 +70848,6 @@ async function run() {
                 };
             }));
             const prompt = getPrompt(batchContent);
-            core.info(prompt);
             const response = await openai.chat.completions.create({
                 model,
                 messages: [
@@ -70960,18 +70889,15 @@ async function run() {
         if (githubToken) {
             await postCommentToPR(githubToken, markdownComment);
         }
-        // Set outputs
         core.setOutput("summary", JSON.stringify(finalSummary, null, 2));
         core.setOutput("detailed_report", JSON.stringify(detailedReport, null, 2));
         core.setOutput("markdown_comment", markdownComment);
-        // Log summary to console
         core.info("Analysis complete!");
         core.info(`Total files analyzed: ${finalSummary.totalFiles}`);
-        core.info(`Average score: ${finalSummary.averageScore.toFixed(2)}/100`);
+        core.info(`Average score: ${finalSummary.averageScore}/100`);
         core.info(`Summary: ${finalSummary.summary}`);
     }
     catch (error) {
-        // Fail the workflow run if an error occurs
         if (error instanceof Error)
             core.setFailed(error.message);
     }

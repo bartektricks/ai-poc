@@ -91,10 +91,9 @@ describe("getPrompt", () => {
 			'"summary": "Overall assessment of the test file"',
 		);
 		expect(prompt).toContain('"score": 7');
-		expect(prompt).toContain('"tests": [');
-		expect(prompt).toContain('"name": "test name or description"');
-		expect(prompt).toContain('"meaningful": true/false');
-		expect(prompt).toContain('"suggestions": "Any improvement suggestions"');
+		expect(prompt).toContain(
+			'"suggestions": "Any improvement suggestions if score below 70"',
+		);
 		expect(prompt).toContain(
 			'"overallSummary": "Brief summary of all test files analyzed in this batch"',
 		);

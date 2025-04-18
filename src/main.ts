@@ -100,8 +100,6 @@ export async function run(): Promise<void> {
 
 			const prompt = getPrompt(batchContent);
 
-			core.info(prompt);
-
 			const response = await openai.chat.completions.create({
 				model,
 				messages: [
@@ -155,18 +153,15 @@ export async function run(): Promise<void> {
 			await postCommentToPR(githubToken, markdownComment);
 		}
 
-		// Set outputs
 		core.setOutput("summary", JSON.stringify(finalSummary, null, 2));
 		core.setOutput("detailed_report", JSON.stringify(detailedReport, null, 2));
 		core.setOutput("markdown_comment", markdownComment);
 
-		// Log summary to console
 		core.info("Analysis complete!");
 		core.info(`Total files analyzed: ${finalSummary.totalFiles}`);
-		core.info(`Average score: ${finalSummary.averageScore.toFixed(2)}/100`);
+		core.info(`Average score: ${finalSummary.averageScore}/100`);
 		core.info(`Summary: ${finalSummary.summary}`);
 	} catch (error) {
-		// Fail the workflow run if an error occurs
 		if (error instanceof Error) core.setFailed(error.message);
 	}
 }

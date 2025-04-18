@@ -12,10 +12,10 @@ describe("calculateAverageScore", () => {
 			file: "test.ts",
 			summary: "Test summary",
 			score: 5,
-			tests: [],
+			suggestions: "",
 		};
 
-		expect(calculateAverageScore([mockFile])).toBe(50);
+		expect(calculateAverageScore([mockFile])).toBe(5);
 	});
 
 	it("calculates the correct average for multiple files", () => {
@@ -24,23 +24,23 @@ describe("calculateAverageScore", () => {
 				file: "test1.ts",
 				summary: "Test summary 1",
 				score: 3,
-				tests: [],
+				suggestions: "",
 			},
 			{
 				file: "test2.ts",
 				summary: "Test summary 2",
 				score: 7,
-				tests: [],
+				suggestions: "",
 			},
 			{
 				file: "test3.ts",
 				summary: "Test summary 3",
 				score: 5,
-				tests: [],
+				suggestions: "",
 			},
 		];
 
-		expect(calculateAverageScore(mockFiles)).toBe(50);
+		expect(calculateAverageScore(mockFiles)).toBe(5);
 	});
 
 	it("handles files with missing scores by treating them as 0", () => {
@@ -49,24 +49,23 @@ describe("calculateAverageScore", () => {
 				file: "test1.ts",
 				summary: "Test summary 1",
 				score: 6,
-				tests: [],
+				suggestions: "",
 			},
 			{
 				file: "test2.ts",
 				summary: "Test summary 2",
 				score: 0,
-				tests: [],
+				suggestions: "",
 			},
 			{
 				file: "test3.ts",
 				summary: "Test summary 3",
 				// @ts-expect-error Testing missing score
 				score: undefined,
-				tests: [],
+				suggestions: "",
 			},
 		];
 
-		// Average: (6 + 0 + 0) / 3 = 2, then * 10 = 20
-		expect(calculateAverageScore(mockFiles)).toBe(20);
+		expect(calculateAverageScore(mockFiles)).toBe(2);
 	});
 });

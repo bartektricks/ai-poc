@@ -7,6 +7,6 @@ export const calculateAverageScore = (detailedReport: File[]) => {
 		(total, file) => total + (file.score || 0),
 		0,
 	);
-	// Scale the average score to a 0-100 range
-	return (sum / detailedReport.length) * 10;
+
+	return sum / detailedReport.length;
 };
