@@ -1,71 +1,25 @@
-import path from "path";
 import core from "@actions/core";
-import glob from "@actions/glob";
-import { readFile } from "fs/promises";
 import OpenAI from "openai";
-import { calculateAverageScore } from "./calculateAverageScore";
-import { generateMarkdownComment } from "./generateMarkdownComment";
-import { getChangedFiles } from "./getChangedFiles";
-import { ResponseJson, getPrompt } from "./getPrompt";
-import type { File } from "./getPrompt";
-import { identifyTopIssues } from "./identifyTopIssues";
-import { postCommentToPR } from "./postCommentToPr";
+import { getConfig } from "./config";
+import { findTestFiles } from "./findTestFiles";
+import { generateSummary, outputResults } from "./generateReport";
+import { processBatches } from "./processBatch";
 
 export async function run(): Promise<void> {
 	try {
-		const apiKey = core.getInput("openai_api_key", { required: true });
-		const batchSize =
-			Number(core.getInput("batch_size", { required: false })) || 5;
-		const model = core.getInput("model", { required: false }) || "gpt-4o-mini";
-		const temperature = Number(
-			core.getInput("temperature", { required: false }) || "0.5",
-		);
-		const testPatterns =
-			core.getInput("test_files", { required: false }) || "**/*.test.ts";
-		const githubToken = core.getInput("github_token", { required: false });
-		const onlyChangedFilesInput =
-			core.getInput("only_changed_files", { required: false }) || "true";
-		const onlyChangedFiles = onlyChangedFilesInput === "true";
+		const config = getConfig();
 
 		const openai = new OpenAI({
-			apiKey,
+			apiKey: config.apiKey,
 		});
 
 		core.info(`Finding test files`);
 
-		const patterns = ["!**/node_modules/**", "!**/dist/**", "!**/build/**"];
-
-		if (testPatterns) {
-			patterns.unshift(...testPatterns.split(" "));
-		}
-
-		let testFiles: string[] = [];
-
-		async function getTestFiles(): Promise<string[]> {
-			const globber = await glob.create(patterns.join("\n"));
-			return globber.glob();
-		}
-
-		if (onlyChangedFiles && githubToken) {
-			core.info("Getting changed files from PR");
-			const changedFiles = await getChangedFiles(githubToken);
-			const allTestFiles = await getTestFiles();
-
-			const relativeChangedFiles = changedFiles.map((file) =>
-				path.relative(process.cwd(), file),
-			);
-
-			testFiles = allTestFiles.filter((file) => {
-				const relativePath = path.relative(process.cwd(), file);
-				return relativeChangedFiles.includes(relativePath);
-			});
-
-			core.info(
-				`Found ${testFiles.length} changed test files out of ${allTestFiles.length} total test files`,
-			);
-		} else {
-			testFiles = await getTestFiles();
-		}
+		const testFiles = await findTestFiles(
+			config.testPatterns,
+			config.onlyChangedFiles,
+			config.githubToken,
+		);
 
 		if (testFiles.length === 0) {
 			core.info(`No test files found`);
@@ -74,93 +28,21 @@ export async function run(): Promise<void> {
 
 		core.info(`Analyzing ${testFiles.length} test files`);
 
-		const batches = [];
+		const { overallSummary, detailedReport } = await processBatches(
+			testFiles,
+			config.batchSize,
+			config.model,
+			config.temperature,
+			openai,
+		);
 
-		for (let i = 0; i < testFiles.length; i += batchSize) {
-			batches.push(testFiles.slice(i, i + batchSize));
-		}
-
-		let overallSummary: string[] = [];
-		let detailedReport: File[] = [];
-
-		for (const batch of batches) {
-			const batchContent = await Promise.all(
-				batch.map(async (file) => {
-					const content = await readFile(file, "utf-8");
-					const contentWithoutImports = content.replace(
-						/import\s[\s\S]*?from ['"][\s\S]*?['"];/gm,
-						"",
-					);
-					return {
-						file: path.relative(process.cwd(), file),
-						content: contentWithoutImports,
-					};
-				}),
-			);
-
-			const prompt = getPrompt(batchContent);
-
-			const response = await openai.chat.completions.create({
-				model,
-				messages: [
-					{
-						role: "system",
-						content:
-							"You are a senior software engineer specializing in test quality analysis.",
-					},
-					{ role: "user", content: prompt },
-				],
-				temperature: Number(temperature),
-				response_format: { type: "json_object" },
-			});
-
-			const content = response.choices[0].message.content;
-
-			if (!content) {
-				core.error(`No response from OpenAI`);
-				continue;
-			}
-
-			try {
-				const result: ResponseJson = JSON.parse(content);
-
-				if (result.files) {
-					detailedReport = [...detailedReport, ...result.files];
-				}
-
-				if (result.overallSummary) {
-					overallSummary.push(result.overallSummary);
-				}
-			} catch (error) {
-				core.error(`Error parsing JSON: ${error}`);
-				continue;
-			}
-		}
-
-		const finalSummary = {
-			totalFiles: testFiles.length,
-			averageScore: calculateAverageScore(detailedReport),
-			summary: overallSummary.join(" "),
-			topIssues: identifyTopIssues(detailedReport),
-		};
-
-		const markdownComment = generateMarkdownComment(
-			finalSummary,
+		const finalSummary = generateSummary(
+			testFiles,
+			overallSummary,
 			detailedReport,
 		);
 
-		if (githubToken) {
-			await postCommentToPR(githubToken, markdownComment);
-		}
-
-		core.setOutput("summary", JSON.stringify(finalSummary, null, 2));
-		core.setOutput("detailed_report", JSON.stringify(detailedReport, null, 2));
-		core.setOutput("markdown_comment", markdownComment);
-
-		core.info("Analysis complete!");
-		core.info(`Total files analyzed: ${finalSummary.totalFiles}`);
-		core.info(`Average score: ${finalSummary.averageScore}/100`);
-		core.info(`Summary: ${finalSummary.summary}`);
+		await outputResults(finalSummary, detailedReport, config.githubToken);
 	} catch (error) {
 		if (error instanceof Error) core.setFailed(error.message);
 	}

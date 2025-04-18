@@ -1,4 +1,4 @@
-import { MEANINGFUL_SCORE } from "./config";
+import { MEANINGFUL_SCORE } from "./constants";
 import type { File } from "./getPrompt";
 import type { identifyTopIssues } from "./identifyTopIssues";
 

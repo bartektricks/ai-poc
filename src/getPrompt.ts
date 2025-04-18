@@ -1,4 +1,4 @@
-import { MEANINGFUL_SCORE } from "./config";
+import { MEANINGFUL_SCORE } from "./constants";
 
 type PromptFile = {
 	file: string;

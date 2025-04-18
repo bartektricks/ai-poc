@@ -13,4 +13,4 @@ RUN chown -R github:github /home/github
 
 USER github
 
-ENTRYPOINT ["node", "/home/github/app/dist/index.js"]
+ENTRYPOINT ["node", "--no-warnings=ExperimentalWarning", "/home/github/app/dist/index.js"]

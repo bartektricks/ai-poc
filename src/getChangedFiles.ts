@@ -6,15 +6,23 @@ export async function getChangedFiles(token: string): Promise<string[]> {
 		const octokit = github.getOctokit(token);
 		const context = github.context;
 
-		if (!context.payload.pull_request) {
+		let owner = context.repo.owner;
+		let repo = context.repo.repo;
+		let pull_number: number;
+
+		// Handle both direct PR context and issue_comment on a PR
+		if (context.payload.pull_request) {
+			// Direct pull_request trigger
+			pull_number = context.payload.pull_request.number;
+		} else if (context.payload.issue?.pull_request) {
+			// Issue comment on a PR
+			pull_number = context.payload.issue.number;
+		} else {
 			core.warning(
 				"This action is not running in a pull request context. No changed files will be returned.",
 			);
 			return [];
 		}
-
-		const { owner, repo } = context.repo;
-		const pull_number = context.payload.pull_request.number;
 
 		core.info(
 			`Getting changed files for PR #${pull_number} in ${owner}/${repo}`,

@@ -1,4 +1,4 @@
-import { MEANINGFUL_SCORE } from "./config";
+import { MEANINGFUL_SCORE } from "./constants";
 import type { File } from "./getPrompt";
 
 export const identifyTopIssues = (detailedReport: File[]) =>
