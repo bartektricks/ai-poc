@@ -20,10 +20,8 @@ export async function getChangedFiles(token: string): Promise<string[]> {
 			`Getting changed files for PR #${pull_number} in ${owner}/${repo}`,
 		);
 
-		// Get all changed files in the PR
 		const changedFiles: string[] = [];
 
-		// Need to handle pagination for PRs with many changed files
 		const options = octokit.rest.pulls.listFiles.endpoint.merge({
 			owner: owner,
 			repo: repo,
@@ -34,7 +32,6 @@ export async function getChangedFiles(token: string): Promise<string[]> {
 		const response = await octokit.paginate(options);
 
 		for (const file of response) {
-			// Ensure file has the expected structure with a filename property
 			if (
 				file &&
 				typeof file === "object" &&

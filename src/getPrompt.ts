@@ -1,3 +1,5 @@
+import { MEANINGFUL_SCORE } from "./config";
+
 type PromptFile = {
 	file: string;
 	content: string;
@@ -7,13 +9,7 @@ export type File = {
 	file: string;
 	summary: string;
 	score: number;
-	tests: {
-		name: string;
-		summary: string;
-		meaningful: boolean;
-		score: number;
-		suggestions: string;
-	}[];
+	suggestions: string;
 };
 
 export type ResponseJson = {
@@ -48,16 +44,8 @@ Please provide your analysis in JSON format with the following structure:
     {
       "file": "path/to/file.test.ts",
       "summary": "Overall assessment of the test file",
-      "score": 7,
-      "tests": [
-        {
-          "name": "test name or description",
-          "summary": "What this test is checking",
-          "meaningful": true/false,
-          "score": 8,
-          "suggestions": "Any improvement suggestions"
-        }
-      ]
+      "score": 70/100,
+	  "suggestions": "Any improvement suggestions if score below ${MEANINGFUL_SCORE}",
     }
   ],
   "overallSummary": "Brief summary of all test files analyzed in this batch"

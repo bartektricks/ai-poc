@@ -18,7 +18,7 @@ describe("generateMarkdownComment", () => {
 		expect(markdown).toContain("# 📊 Test Quality Analysis");
 		expect(markdown).toContain("## Summary");
 		expect(markdown).toContain("Total Files Analyzed | 5");
-		expect(markdown).toContain("Average Score | 75.50/100");
+		expect(markdown).toContain("Average Score | 75.5/100");
 		expect(markdown).toContain("## Overall Assessment");
 		expect(markdown).toContain("Overall good test quality");
 
@@ -35,20 +35,14 @@ describe("generateMarkdownComment", () => {
 			summary: "Average test quality",
 			topIssues: [
 				{
-					type: "Low scoring test files",
-					count: 2,
-					examples: [
-						{
-							file: "test1.ts",
-							score: 3,
-							reason: "Poor test coverage",
-						},
-						{
-							file: "test2.ts",
-							score: 4,
-							reason: "Missing assertions",
-						},
-					],
+					file: "test1.ts",
+					score: 3,
+					reason: "Poor test coverage",
+				},
+				{
+					file: "test2.ts",
+					score: 4,
+					reason: "Missing assertions",
 				},
 			],
 		};
@@ -78,43 +72,18 @@ describe("generateMarkdownComment", () => {
 				file: "example.test.ts",
 				summary: "Well-structured tests",
 				score: 8.5,
-				tests: [
-					{
-						name: "test case 1",
-						summary: "Tests main functionality",
-						meaningful: true,
-						score: 9,
-						suggestions: "No improvements needed",
-					},
-					{
-						name: "test case 2",
-						summary: "Tests edge case",
-						meaningful: true,
-						score: 8,
-						suggestions: "Could add more assertions",
-					},
-				],
+				suggestions: "No improvements needed",
 			},
 		];
 
 		const markdown = generateMarkdownComment(summary, detailedReport);
 
-		// Check for detailed report section
 		expect(markdown).toContain("## Detailed Report");
 		expect(markdown).toContain("`example.test.ts`");
 		expect(markdown).toContain("8.5/100");
 		expect(markdown).toContain("Well-structured tests");
-
-		// Check for test details section
-		expect(markdown).toContain("## Test Details");
-		expect(markdown).toContain("### example.test.ts");
-		expect(markdown).toContain("test case 1");
-		expect(markdown).toContain("9.0/100");
-		expect(markdown).toContain("✅");
 		expect(markdown).toContain("No improvements needed");
-		expect(markdown).toContain("test case 2");
-		expect(markdown).toContain("8.0/100");
-		expect(markdown).toContain("Could add more assertions");
+		expect(markdown).not.toContain("## Test Details");
 	});
 
 	it("properly escapes pipe characters in text", () => {
@@ -124,15 +93,9 @@ describe("generateMarkdownComment", () => {
 			summary: "Tests with | pipe characters",
 			topIssues: [
 				{
-					type: "Issues with | pipes",
-					count: 1,
-					examples: [
-						{
-							file: "pipe-test.ts",
-							score: 4,
-							reason: "Contains | pipe characters",
-						},
-					],
+					file: "pipe-test.ts",
+					score: 7,
+					reason: "Contains | pipe characters",
 				},
 			],
 		};
@@ -142,27 +105,16 @@ describe("generateMarkdownComment", () => {
 				file: "pipe-test.ts",
 				summary: "Summary with | pipe",
 				score: 7,
-				tests: [
-					{
-						name: "test | with pipe",
-						summary: "Test summary | with pipe",
-						meaningful: false,
-						score: 5,
-						suggestions: "Suggestions | with pipe",
-					},
-				],
+				suggestions: "Suggestions with | pipe",
 			},
 		];
 
 		const markdown = generateMarkdownComment(summary, detailedReport);
 
 		// Check that pipes are properly escaped
-		expect(markdown).toContain("Tests with | pipe characters");
-		expect(markdown).toContain("Issues with | pipes");
 		expect(markdown).toContain("Contains \\| pipe characters");
 		expect(markdown).toContain("Summary with \\| pipe");
-		expect(markdown).toContain("test | with pipe");
-		expect(markdown).toContain("Suggestions \\| with pipe");
+		expect(markdown).toContain("Suggestions with \\| pipe");
 	});
 
 	it("handles test issue examples with 'test' property", () => {
@@ -172,15 +124,9 @@ describe("generateMarkdownComment", () => {
 			summary: "Tests with issues",
 			topIssues: [
 				{
-					type: "Tests of implementation details",
-					count: 1,
-					examples: [
-						{
-							file: "implementation-test.ts",
-							test: "testImplementationDetails",
-							reason: "Testing internal implementation",
-						},
-					],
+					file: "test-issue.ts",
+					score: 60,
+					reason: "testImplementationDetails: Testing internal implementation",
 				},
 			],
 		};

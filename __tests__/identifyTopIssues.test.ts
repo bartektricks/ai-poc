@@ -15,29 +15,14 @@ describe("identifyTopIssues", () => {
 			{
 				file: "good-file.test.ts",
 				summary: "Well-written tests",
-				score: 8,
-				tests: [
-					{
-						name: "test1",
-						summary: "Good test",
-						meaningful: true,
-						score: 9,
-						suggestions: "",
-					},
-					{
-						name: "test2",
-						summary: "Another good test",
-						meaningful: true,
-						score: 7,
-						suggestions: "",
-					},
-				],
+				score: 80,
+				suggestions: "",
 			},
 		];
 
 		const issues = identifyTopIssues(detailedReport);
 
-		expect(issues).toEqual([]);
+		expect(issues.length).toEqual(0);
 	});
 
 	it("identifies low scoring test files", () => {
@@ -46,38 +31,28 @@ describe("identifyTopIssues", () => {
 				file: "low-score1.test.ts",
 				summary: "Poor test quality",
 				score: 3,
-				tests: [],
+				suggestions: "",
 			},
 			{
 				file: "low-score2.test.ts",
 				summary: "Missing assertions",
-				score: 4,
-				tests: [],
+				score: 71,
+				suggestions: "",
 			},
 			{
 				file: "good-score.test.ts",
 				summary: "Good test quality",
-				score: 8,
-				tests: [],
+				score: 80,
+				suggestions: "",
 			},
 		];
 
 		const issues = identifyTopIssues(detailedReport);
 
 		expect(issues.length).toBe(1);
-		expect(issues[0].type).toBe("Low scoring test files");
-		expect(issues[0].count).toBe(2);
-		expect(issues[0].examples.length).toBe(2);
-		expect(issues[0].examples).toContainEqual({
-			file: "low-score1.test.ts",
-			score: 3,
-			reason: "Poor test quality",
-		});
-		expect(issues[0].examples).toContainEqual({
-			file: "low-score2.test.ts",
-			score: 4,
-			reason: "Missing assertions",
-		});
+		expect(issues[0].file).toBe("low-score1.test.ts");
+		expect(issues[0].score).toBe(3);
+		expect(issues[0].reason).toBe("Poor test quality");
 	});
 
 	it("identifies tests that are not meaningful", () => {
@@ -85,56 +60,23 @@ describe("identifyTopIssues", () => {
 			{
 				file: "implementation.test.ts",
 				summary: "Tests implementation details",
-				score: 6,
-				tests: [
-					{
-						name: "test1",
-						summary: "Tests implementation details",
-						meaningful: false,
-						score: 4,
-						suggestions: "Focus on behavior, not implementation",
-					},
-					{
-						name: "test2",
-						summary: "Good test",
-						meaningful: true,
-						score: 8,
-						suggestions: "",
-					},
-				],
+				score: 71,
+				suggestions: "",
 			},
 			{
 				file: "another-file.test.ts",
 				summary: "Mixed quality",
 				score: 5,
-				tests: [
-					{
-						name: "test3",
-						summary: "Tests internal state",
-						meaningful: false,
-						score: 3,
-						suggestions: "Test outputs instead of internals",
-					},
-				],
+				suggestions: "Test outputs instead of internals",
 			},
 		];
 
 		const issues = identifyTopIssues(detailedReport);
 
 		expect(issues.length).toBe(1);
-		expect(issues[0].type).toBe("Tests of implementation details");
-		expect(issues[0].count).toBe(2);
-		expect(issues[0].examples.length).toBe(2);
-		expect(issues[0].examples).toContainEqual({
-			file: "implementation.test.ts",
-			test: "test1",
-			reason: "Tests implementation details",
-		});
-		expect(issues[0].examples).toContainEqual({
-			file: "another-file.test.ts",
-			test: "test3",
-			reason: "Tests internal state",
-		});
+		expect(issues[0].file).toBe("another-file.test.ts");
+		expect(issues[0].score).toBe(5);
+		expect(issues[0].reason).toBe("Mixed quality");
 	});
 
 	it("identifies both types of issues", () => {
@@ -143,21 +85,13 @@ describe("identifyTopIssues", () => {
 				file: "low-score.test.ts",
 				summary: "Poor quality",
 				score: 3,
-				tests: [],
+				suggestions: "",
 			},
 			{
 				file: "mixed-quality.test.ts",
 				summary: "Mixed quality tests",
 				score: 6,
-				tests: [
-					{
-						name: "bad-test",
-						summary: "Tests implementation details",
-						meaningful: false,
-						score: 4,
-						suggestions: "Improve test",
-					},
-				],
+				suggestions: "Improve test",
 			},
 		];
 
@@ -166,14 +100,14 @@ describe("identifyTopIssues", () => {
 		expect(issues.length).toBe(2);
 
 		// First issue type: Low scoring files
-		expect(issues[0].type).toBe("Low scoring test files");
-		expect(issues[0].count).toBe(1);
-		expect(issues[0].examples.length).toBe(1);
+		expect(issues[0].file).toBe("low-score.test.ts");
+		expect(issues[0].score).toBe(3);
+		expect(issues[0].reason).toBe("Poor quality");
 
 		// Second issue type: Tests of implementation details
-		expect(issues[1].type).toBe("Tests of implementation details");
-		expect(issues[1].count).toBe(1);
-		expect(issues[1].examples.length).toBe(1);
+		expect(issues[1].file).toBe("mixed-quality.test.ts");
+		expect(issues[1].score).toBe(6);
+		expect(issues[1].reason).toBe("Mixed quality tests");
 	});
 
 	it("handles files with missing tests array", () => {
@@ -190,8 +124,8 @@ describe("identifyTopIssues", () => {
 		const issues = identifyTopIssues(detailedReport);
 
 		expect(issues.length).toBe(1);
-		expect(issues[0].type).toBe("Low scoring test files");
-		expect(issues[0].count).toBe(1);
+		expect(issues[0].file).toBe("missing-tests-array.test.ts");
+		expect(issues[0].score).toBe(3);
 	});
 
 	it("limits examples to 3 per issue type", () => {
@@ -200,32 +134,30 @@ describe("identifyTopIssues", () => {
 				file: "file1.test.ts",
 				summary: "Low quality 1",
 				score: 2,
-				tests: [],
+				suggestions: "",
 			},
 			{
 				file: "file2.test.ts",
 				summary: "Low quality 2",
 				score: 3,
-				tests: [],
+				suggestions: "",
 			},
 			{
 				file: "file3.test.ts",
 				summary: "Low quality 3",
 				score: 4,
-				tests: [],
+				suggestions: "",
 			},
 			{
 				file: "file4.test.ts",
 				summary: "Low quality 4",
 				score: 1,
-				tests: [],
+				suggestions: "",
 			},
 		];
 
 		const issues = identifyTopIssues(detailedReport);
 
-		expect(issues[0].count).toBe(4);
-		// Should only include 3 examples even though there are 4 low scoring files
-		expect(issues[0].examples.length).toBe(3);
+		expect(issues.length).toBe(4);
 	});
 });
