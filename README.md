@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Analyze Test Quality
-        uses: Aetherr-Agency/test-quality-analysis@v1
+        uses: Aetherr-Agency/DeepDive@v1
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -75,7 +75,7 @@ You can specify custom patterns to match your test files:
 
 ```yaml
 - name: Analyze Test Quality
-  uses: Aetherr-Agency/test-quality-analysis@v1
+  uses: Aetherr-Agency/DeepDive@v1
   with:
     openai_api_key: ${{ secrets.OPENAI_API_KEY }}
     test_files: "**/*test.js **/*spec.js **/__tests__/**/*.js"
@@ -87,7 +87,7 @@ For more detailed analysis, you can use a more powerful model:
 
 ```yaml
 - name: Analyze Test Quality
-  uses: Aetherr-Agency/test-quality-analysis@v1
+  uses: Aetherr-Agency/DeepDive@v1
   with:
     openai_api_key: ${{ secrets.OPENAI_API_KEY }}
     model: "gpt-4o"
@@ -110,7 +110,7 @@ jobs:
       
       - name: Analyze Test Quality
         id: test_analysis
-        uses: Aetherr-Agency/test-quality-analysis@v1
+        uses: Aetherr-Agency/DeepDive@v1
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -126,6 +126,43 @@ jobs:
           name: test-analysis-report
           path: test-analysis-report.json
 ```
+
+## Example analysis (mocked data)
+
+# 📊 Test Quality Analysis
+
+## Summary
+
+| Metric | Value |
+| --- | --- |
+| Total Files Analyzed | 7 |
+| Average Score | 75/100 |
+
+## Overall Assessment
+
+The unit tests demonstrate a solid understanding of testing principles, covering various scenarios for each function. Most tests are meaningful and provide good coverage, but some could benefit from additional edge case considerations. The first test file is ineffective and lacks any meaningful tests, while the second test file is well-structured and provides valuable coverage for the `postCommentToPR` function. Improvements can be made by removing or enhancing the first test and ensuring the second test covers more edge cases.
+
+## Top Issues
+
+### Low scoring test files (1)
+
+| File | Issue |
+| --- | --- |
+| `__tests__/main.test.ts` | This test is essentially a placeholder that checks if true is equal to true. It does not provide any meaningful validation of functionality or behavior. |
+
+## Detailed Report
+
+| File | Score | Meaningful | Suggestions | Summary |
+| --- | --- | --- | --- | --- |
+| `__tests__/calculateAverageScore.test.ts` | 85/100 | ✅ | Consider adding tests for edge cases such as negative scores or very large arrays. | Tests the calculateAverageScore function for various scenarios including empty arrays, single file, multiple files, and handling missing scores. |
+| `__tests__/generateMarkdownComment.test.ts` | 90/100 | ✅ | Add tests for more complex scenarios with mixed data types in the summary. | Tests the generateMarkdownComment function for generating markdown output based on summary and detailed reports. |
+| `__tests__/getChangedFiles.test.ts` | 95/100 | ✅ | Ensure that the mock implementations cover all edge cases, especially for error handling. | Tests the getChangedFiles function for various scenarios including PR context, fetching files, filtering invalid files, and handling errors. |
+| `__tests__/getPrompt.test.ts` | 80/100 | ✅ | Consider testing for more diverse test file contents and edge cases. | Tests the getPrompt function to ensure it generates the correct prompt structure for different numbers of test files. |
+| `__tests__/identifyTopIssues.test.ts` | 85/100 | ✅ | Add tests for more complex scenarios with mixed quality reports. | Tests the identifyTopIssues function for identifying issues in a detailed report including low scores and tests that are not meaningful. |
+| `__tests__/main.test.ts` | 0/100 | ❌ | Remove this test or replace it with meaningful tests that validate actual functionality of the codebase. | This test is essentially a placeholder that checks if true is equal to true. It does not provide any meaningful validation of functionality or behavior. |
+| `__tests__/postCommentToPr.test.ts` | 90/100 | ✅ | Consider adding more edge cases or additional scenarios, such as testing for invalid tokens or unexpected payload structures. | This test file contains multiple tests for the `postCommentToPR` function, covering scenarios such as posting a comment in PR context, skipping when not in PR context, and handling errors. The tests are comprehensive and effectively validate the function's behavior. |
+
+
 
 ## License
 
