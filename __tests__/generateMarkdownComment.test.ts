@@ -3,7 +3,7 @@ import { generateMarkdownComment } from "../src/generateMarkdownComment";
 import type { File } from "../src/getPrompt";
 
 describe("generateMarkdownComment", () => {
-	it("generates basic markdown with minimal data", () => {
+	it("generates basic markdown with minimal data (no issues)", () => {
 		const summary = {
 			totalFiles: 5,
 			averageScore: 75.5,
