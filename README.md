@@ -128,6 +128,131 @@ jobs:
           path: test-analysis-report.json
 ```
 
+### Example workflow with comment trigger
+
+```yaml
+name: DeepDive on PR Comment
+
+on:
+  pull_request:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  add-initial-comment:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    
+    steps:
+      - name: Add initial comment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## 🤖 DeepDive Analysis Available
+            
+            You can run analysis on this PR by using these commands in a comment:
+            
+            - \`/start-analysis\` - Run analysis on changed files only
+            - \`/analyze-all\` - Run analysis on all test files in the repository
+            
+            The analysis will check your test files and provide feedback.`
+            });
+
+  deepdive-check:
+    if: |
+      github.event.issue.pull_request != null &&
+      (
+        github.event.comment.body == '/start-analysis' ||
+        github.event.comment.body == '/analyze-all'
+      )
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+
+    steps:
+      - name: Set initial PR Check status (DeepDive Analysis)
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.issue.number
+            });
+            const commitSHA = pr.data.head.sha;
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: commitSHA,
+              state: "pending",
+              context: "DeepDive Analysis",
+              description: "DeepDive analysis in progress...",
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            });
+
+      - name: Set analyze_all flag
+        id: set_scope
+        run: |
+          if [[ "${{ github.event.comment.body }}" == "/analyze-all" ]]; then
+            echo "analyze_all=true" >> $GITHUB_OUTPUT
+          else
+            echo "analyze_all=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Run DeepDive analysis
+        id: deepdive
+        uses: ./
+        with:
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          test_files: "**/*.test.ts **/*.test.tsx"
+          only_changed_files: ${{ steps.set_scope.outputs.analyze_all == 'false' }}
+
+      - name: Update PR Check status (DeepDive Analysis)
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.issue.number
+            });
+            const commitSHA = pr.data.head.sha;
+            
+            const state = "${{ steps.deepdive.outcome }}" === "success" ? "success" : "failure";
+            const description = state === "success" 
+              ? "DeepDive analysis completed successfully" 
+              : "DeepDive analysis failed";
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: commitSHA,
+              state: state,
+              context: "DeepDive Analysis",
+              description: description,
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            });
+```
+
 ## Example analysis (mocked data)
 
 # 📊 Test Quality Analysis
