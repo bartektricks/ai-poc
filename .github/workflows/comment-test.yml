@@ -1,6 +1,8 @@
 name: DeepDive on PR Comment
 
 on:
+  pull_request:
+    types: [opened]
   issue_comment:
     types: [created]
 
