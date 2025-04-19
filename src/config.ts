@@ -1,4 +1,5 @@
 import core from "@actions/core";
+import { formatTemperature } from "./formatTemperature";
 
 export interface Config {
 	apiKey: string;
@@ -15,9 +16,12 @@ export function getConfig(): Config {
 	const batchSize =
 		Number(core.getInput("batch_size", { required: false })) || 5;
 	const model = core.getInput("model", { required: false }) || "gpt-4o-mini";
-	const temperature = Number(
-		core.getInput("temperature", { required: false }) || "0.5",
+	const temperatureInput = parseFloat(
+		core.getInput("temperature", { required: false }),
 	);
+	const temperature = Number.isNaN(temperatureInput)
+		? 0.5
+		: formatTemperature(temperatureInput);
 	const testPatterns =
 		core.getInput("test_files", { required: false }) || "**/*.test.ts";
 	const githubToken =

@@ -4,7 +4,6 @@ import { GitHub } from "@actions/github/lib/utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getChangedFiles } from "../src/getChangedFiles";
 
-// Mock the @actions/github module
 vi.mock("@actions/github", () => ({
 	getOctokit: vi.fn().mockReturnValue({
 		rest: {
@@ -31,7 +30,6 @@ vi.mock("@actions/github", () => ({
 	},
 }));
 
-// Mock the @actions/core module
 vi.mock("@actions/core", () => ({
 	info: vi.fn(),
 	warning: vi.fn(),
@@ -48,14 +46,12 @@ describe("getChangedFiles", () => {
 	});
 
 	it("returns empty array when not in PR context", async () => {
-		// Create a modified context for this test case only
 		const originalContext = { ...github.context };
 		const modifiedContext = {
 			...originalContext,
 			payload: { ...originalContext.payload, pull_request: undefined },
 		};
 
-		// Temporarily replace the context
 		Object.defineProperty(github, "context", {
 			value: modifiedContext,
 			configurable: true,
@@ -63,7 +59,6 @@ describe("getChangedFiles", () => {
 
 		const result = await getChangedFiles("fake-token");
 
-		// Restore original context
 		Object.defineProperty(github, "context", {
 			value: originalContext,
 			configurable: true,
@@ -76,7 +71,6 @@ describe("getChangedFiles", () => {
 	});
 
 	it("fetches changed files in a PR", async () => {
-		// Setup mock response
 		const mockFiles = [
 			{ filename: "file1.ts" },
 			{ filename: "file2.ts" },
@@ -106,7 +100,6 @@ describe("getChangedFiles", () => {
 	});
 
 	it("filters out invalid file objects", async () => {
-		// Setup mock response with some invalid objects
 		const mockFiles = [
 			{ filename: "file1.ts" },
 			null, // Invalid
@@ -135,7 +128,6 @@ describe("getChangedFiles", () => {
 	});
 
 	it("handles errors gracefully", async () => {
-		// Setup mock to throw an error
 		vi.mocked(github.getOctokit).mockReturnValue({
 			rest: {
 				pulls: {

@@ -14,7 +14,6 @@ describe("generateMarkdownComment", () => {
 
 		const markdown = generateMarkdownComment(summary, detailedReport);
 
-		// Check for basic elements
 		expect(markdown).toContain("# 📊 Test Quality Analysis");
 		expect(markdown).toContain("## Summary");
 		expect(markdown).toContain("Total Files Analyzed | 5");
@@ -22,7 +21,6 @@ describe("generateMarkdownComment", () => {
 		expect(markdown).toContain("## Overall Assessment");
 		expect(markdown).toContain("Overall good test quality");
 
-		// Should not contain sections for empty data
 		expect(markdown).not.toContain("## Top Issues");
 		expect(markdown).not.toContain("## Detailed Report");
 		expect(markdown).not.toContain("## Test Details");
@@ -50,7 +48,6 @@ describe("generateMarkdownComment", () => {
 
 		const markdown = generateMarkdownComment(summary, detailedReport);
 
-		// Check for top issues section
 		expect(markdown).toContain("## Top Issues");
 		expect(markdown).toContain("### Low scoring test files (2)");
 		expect(markdown).toContain("`test1.ts`");
@@ -111,7 +108,6 @@ describe("generateMarkdownComment", () => {
 
 		const markdown = generateMarkdownComment(summary, detailedReport);
 
-		// Check that pipes are properly escaped
 		expect(markdown).toContain("Contains \\| pipe characters");
 		expect(markdown).toContain("Summary with \\| pipe");
 		expect(markdown).toContain("Suggestions with \\| pipe");
@@ -135,7 +131,6 @@ describe("generateMarkdownComment", () => {
 
 		const markdown = generateMarkdownComment(summary, detailedReport);
 
-		// Check that test name and reason are formatted correctly
 		expect(markdown).toContain(
 			"testImplementationDetails: Testing internal implementation",
 		);

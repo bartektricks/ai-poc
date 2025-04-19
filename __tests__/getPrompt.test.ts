@@ -6,12 +6,10 @@ describe("getPrompt", () => {
 		const testFiles: { file: string; content: string }[] = [];
 		const prompt = getPrompt(testFiles);
 
-		// Check for basic structure elements
 		expect(prompt).toContain("You are a senior software engineer.");
 		expect(prompt).toContain("Evaluate the following TypeScript unit tests");
 		expect(prompt).toContain("Please provide your analysis in JSON format");
 
-		// Should not contain any file sections since there are no files
 		expect(prompt).not.toContain("FILE:");
 	});
 
@@ -24,7 +22,6 @@ describe("getPrompt", () => {
 		];
 		const prompt = getPrompt(testFiles);
 
-		// Check that the file is included
 		expect(prompt).toContain("FILE: src/example.test.ts");
 		expect(prompt).toContain("```typescript");
 		expect(prompt).toContain(
@@ -32,7 +29,6 @@ describe("getPrompt", () => {
 		);
 		expect(prompt).toContain("```");
 
-		// Check for instructions
 		expect(prompt).toContain("Summary of what it's testing.");
 		expect(prompt).toContain(
 			"Whether it's meaningful or just testing implementation details.",
@@ -58,7 +54,6 @@ describe("getPrompt", () => {
 		];
 		const prompt = getPrompt(testFiles);
 
-		// Check that all files are included
 		expect(prompt).toContain("FILE: src/first.test.ts");
 		expect(prompt).toContain(
 			"test('first test', () => { expect(1).toBe(1); });",
@@ -79,12 +74,12 @@ describe("getPrompt", () => {
 		const testFiles = [
 			{
 				file: "src/example.test.ts",
-				content: "// Test content",
 			},
 		];
+
+		// @ts-expect-error Testing with missing content
 		const prompt = getPrompt(testFiles);
 
-		// Check for JSON structure elements
 		expect(prompt).toContain('"files": [');
 		expect(prompt).toContain('"file": "path/to/file.test.ts"');
 		expect(prompt).toContain(
@@ -108,7 +103,6 @@ describe("getPrompt", () => {
 		];
 		const prompt = getPrompt(testFiles);
 
-		// Check that special characters are preserved
 		expect(prompt).toContain(
 			"test('special \"quotes\" and \\backslashes\\', () => {});",
 		);

@@ -99,12 +99,10 @@ describe("identifyTopIssues", () => {
 
 		expect(issues.length).toBe(2);
 
-		// First issue type: Low scoring files
 		expect(issues[0].file).toBe("low-score.test.ts");
 		expect(issues[0].score).toBe(3);
 		expect(issues[0].reason).toBe("Poor quality");
 
-		// Second issue type: Tests of implementation details
 		expect(issues[1].file).toBe("mixed-quality.test.ts");
 		expect(issues[1].score).toBe(6);
 		expect(issues[1].reason).toBe("Mixed quality tests");

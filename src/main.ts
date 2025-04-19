@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import { getConfig } from "./config";
 import { findTestFiles } from "./findTestFiles";
 import { generateSummary, outputResults } from "./generateReport";
-import { processBatches } from "./processBatch";
+import { processBatches } from "./processBatches";
 
 export async function run(): Promise<void> {
 	try {

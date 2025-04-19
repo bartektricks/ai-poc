@@ -43,7 +43,8 @@ import require$$1$8 from 'node:async_hooks';
 import require$$1$9 from 'node:console';
 import require$$1$a from 'node:dns';
 import require$$2$5 from 'node:sqlite';
-import { readFile } from 'fs/promises';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -33465,11 +33466,19 @@ OpenAI.Responses = Responses;
 OpenAI.Evals = Evals;
 OpenAI.EvalListResponsesPage = EvalListResponsesPage;
 
+const MIN_TEMPERATURE = 0;
+const MAX_TEMPERATURE = 2;
+const formatTemperature = (value) => Math.round(Math.min(Math.max(value, MIN_TEMPERATURE), MAX_TEMPERATURE) * 10) /
+    10;
+
 function getConfig() {
     const apiKey = core.getInput("openai_api_key", { required: true });
     const batchSize = Number(core.getInput("batch_size", { required: false })) || 5;
     const model = core.getInput("model", { required: false }) || "gpt-4o-mini";
-    const temperature = Number(core.getInput("temperature", { required: false }) || "0.5");
+    const temperatureInput = parseFloat(core.getInput("temperature", { required: false }));
+    const temperature = Number.isNaN(temperatureInput)
+        ? 0.5
+        : formatTemperature(temperatureInput);
     const testPatterns = core.getInput("test_files", { required: false }) || "**/*.test.ts";
     const githubToken = core.getInput("github_token", { required: false }) || undefined;
     const onlyChangedFilesInput = core.getInput("only_changed_files", { required: false }) || "true";
@@ -70836,6 +70845,17 @@ async function outputResults(finalSummary, detailedReport, githubToken) {
     core.info(`Summary: ${finalSummary.summary}`);
 }
 
+async function processBatchContent(batch) {
+    return Promise.all(batch.map(async (file) => {
+        const content = await readFile(file, "utf-8");
+        const contentWithoutImports = content.replace(/import\s[\s\S]*?from ['"][\s\S]*?['"];/gm, "");
+        return {
+            file: path.relative(process.cwd(), file),
+            content: contentWithoutImports,
+        };
+    }));
+}
+
 const getPrompt = (testFiles) => `
 You are a senior software engineer. Evaluate the following TypeScript unit tests for usefulness and quality.
 For each test, provide:
@@ -70869,16 +70889,6 @@ Please provide your analysis in JSON format with the following structure:
 }
 `;
 
-async function processBatchContent(batch) {
-    return Promise.all(batch.map(async (file) => {
-        const content = await readFile(file, "utf-8");
-        const contentWithoutImports = content.replace(/import\s[\s\S]*?from ['"][\s\S]*?['"];/gm, "");
-        return {
-            file: require$$0$a.relative(process.cwd(), file),
-            content: contentWithoutImports,
-        };
-    }));
-}
 async function processOpenAIResponse(batchContent, model, temperature, openai) {
     const prompt = getPrompt(batchContent);
     const response = await openai.chat.completions.create({
@@ -70905,6 +70915,7 @@ async function processOpenAIResponse(batchContent, model, temperature, openai) {
         return {};
     }
 }
+
 async function processBatches(testFiles, batchSize, model, temperature, openai) {
     const batches = [];
     for (let i = 0; i < testFiles.length; i += batchSize) {

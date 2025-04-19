@@ -1,7 +1,7 @@
 # Test Quality Analysis GitHub Action
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Coverage](./badges/coverage.svg)]
+![Coverage](./badges/coverage.svg)
 
 A GitHub Action that uses AI to analyze the quality of your test files, providing insightful feedback and suggestions for improvement.
 
