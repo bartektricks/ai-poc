@@ -8,14 +8,19 @@ export async function postCommentToPR(
 	const octokit = github.getOctokit(token);
 
 	const context = github.context;
+	const repo = context.repo;
+	let prNumber: number | undefined;
 
-	if (!context.payload.pull_request) {
+	if (context.payload.pull_request) {
+		prNumber = context.payload.pull_request.number;
+	} else if (context.payload.issue?.pull_request) {
+		prNumber = context.payload.issue.number;
+	}
+
+	if (!prNumber) {
 		core.info("Not in a pull request context. Skipping PR comment.");
 		return;
 	}
-
-	const repo = context.repo;
-	const prNumber = context.payload.pull_request.number;
 
 	try {
 		core.info(`Posting comment to PR #${prNumber}`);
