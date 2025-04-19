@@ -3,7 +3,7 @@ import { calculateAverageScore } from "../src/calculateAverageScore";
 import type { File } from "../src/getPrompt";
 
 describe("calculateAverageScore", () => {
-	it("returns 0 for an empty array", () => {
+	it("returns 0 for an empty array e", () => {
 		expect(calculateAverageScore([])).toBe(0);
 	});
 
