@@ -70810,6 +70810,8 @@ async function postCommentToPR(token, comment) {
     else if (context.payload.issue?.pull_request) {
         prNumber = context.payload.issue.number;
     }
+    core.info(`Context: ${JSON.stringify(context)}`);
+    core.info(`PR Number: ${prNumber}`);
     if (!prNumber) {
         core.info("Not in a pull request context. Skipping PR comment.");
         return;
